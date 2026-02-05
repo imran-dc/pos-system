@@ -1,0 +1,42 @@
+https://chatgpt.com/gg/6983629a976c819796428f054cae7e6e
+
+ Advanced POS UI (fast billing screen like real software)
+ Barcode auto scan
+  Profit calculation per product
+ Vendor ledger system
+ Customer database + credit system
+Low stock alert dashboard
+GST / tax system
+Barcode printed on invoice
+
+Daily closing report
+
+Proper sales history with filters
+
+Profit report
+
+Stock report
+
+User roles system
+
+Backup system
+
+
+ Next Module Options
+You choose what we build next:
+
+POS Billing Screen
+
+Sales Module
+
+Purchase Module
+
+Supplier Management
+
+Customer Management
+
+Expense Module
+
+Reports Module
+
+Dashboard Analytics
