@@ -1,49 +1,127 @@
 <?php
-$category   = $_GET['category'] ?? '';
-$subcategory= $_GET['subcategory'] ?? '';
-$brand      = $_GET['brand'] ?? '';
-$status     = $_GET['status'] ?? '';
-$search     = $_GET['search'] ?? '';
-$per_page   = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
-$page       = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset     = ($page - 1) * $per_page;
+/* =========================
+   FILTER VALUES
+========================= */
+$category     = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+$subcategory  = isset($_GET['subcategory']) ? (int)$_GET['subcategory'] : 0;
+$brand        = isset($_GET['brand']) ? (int)$_GET['brand'] : 0;
+$status       = $_GET['status'] ?? '';
+$search       = $_GET['search'] ?? '';
+$per_page     = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
+$page         = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-$where = " WHERE 1=1 ";
+if($per_page <= 0) $per_page = 10;
+if($page <= 0) $page = 1;
 
-if ($category)     $where .= " AND p.category_id=".(int)$category;
-if ($subcategory)  $where .= " AND p.subcategory_id=".(int)$subcategory;
-if ($brand)        $where .= " AND p.brand_id=".(int)$brand;
-if ($status)       $where .= " AND p.status='".$imwp_conn->real_escape_string($status)."'";
-if ($search)       $where .= " AND p.name LIKE '%".$imwp_conn->real_escape_string($search)."%'";
+$offset = ($page - 1) * $per_page;
 
-$count_sql = "SELECT COUNT(*) as total FROM imwp_products p $where";
-$total = $imwp_conn->query($count_sql)->fetch_assoc()['total'];
+/* =========================
+   BUILD WHERE
+========================= */
+$where = [];
+$params = [];
+$types = "";
+
+if ($category > 0) {
+    $where[] = "p.category_id = ?";
+    $params[] = $category;
+    $types .= "i";
+}
+
+if ($subcategory > 0) {
+    $where[] = "p.subcategory_id = ?";
+    $params[] = $subcategory;
+    $types .= "i";
+}
+
+if ($brand > 0) {
+    $where[] = "p.brand_id = ?";
+    $params[] = $brand;
+    $types .= "i";
+}
+
+if ($status != '') {
+    $where[] = "p.status = ?";
+    $params[] = $status;
+    $types .= "s";
+}
+
+if ($search != '') {
+    $where[] = "p.name LIKE ?";
+    $params[] = "%".$search."%";
+    $types .= "s";
+}
+
+$where_sql = "";
+if(count($where) > 0){
+    $where_sql = " WHERE " . implode(" AND ", $where);
+}
+
+/* =========================
+   COUNT QUERY
+========================= */
+$count_sql = "SELECT COUNT(*) as total FROM imwp_products p $where_sql";
+$count_stmt = $imwp_conn->prepare($count_sql);
+
+if($count_stmt){
+    if(!empty($params)){
+        $count_stmt->bind_param($types, ...$params);
+    }
+    $count_stmt->execute();
+    $count_result = $count_stmt->get_result();
+    $total = $count_result->fetch_assoc()['total'];
+    $count_stmt->close();
+}else{
+    die("Count Query Error: ".$imwp_conn->error);
+}
+
 $total_pages = ceil($total / $per_page);
 
-$sql = "SELECT p.*, 
-        c.name as category, 
-        s.name as subcategory, 
+/* =========================
+   MAIN QUERY
+========================= */
+$sql = "SELECT 
+        p.*,
+        c.name as category,
+        s.name as subcategory,
         b.name as brand
         FROM imwp_products p
         LEFT JOIN imwp_categories c ON p.category_id=c.id
         LEFT JOIN imwp_subcategories s ON p.subcategory_id=s.id
         LEFT JOIN imwp_brands b ON p.brand_id=b.id
-        $where
+        $where_sql
         ORDER BY p.id DESC
-        LIMIT $offset,$per_page";
+        LIMIT ?, ?";
 
-$result = $imwp_conn->query($sql);
+$stmt = $imwp_conn->prepare($sql);
+
+if(!$stmt){
+    die("Main Query Error: ".$imwp_conn->error);
+}
+
+$types_main = $types . "ii";
+$params_main = $params;
+$params_main[] = $offset;
+$params_main[] = $per_page;
+
+$stmt->bind_param($types_main, ...$params_main);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
-<div class="card mb-3">
+<!-- =========================
+     FILTER UI
+========================= -->
+<div class="card shadow-sm mb-3">
 <div class="card-body">
-<form method="GET" action="products.php" class="row g-2">
+
+<form method="GET" class="row g-2 align-items-center">
 
 <div class="col-md-2">
 <select name="category" class="form-select">
 <option value="">Category</option>
 <?php
-$res=$imwp_conn->query("SELECT * FROM imwp_categories");
+$res=$imwp_conn->query("SELECT * FROM imwp_categories ORDER BY name ASC");
 while($r=$res->fetch_assoc()){
 $sel=($category==$r['id'])?"selected":"";
 echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
@@ -56,7 +134,7 @@ echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
 <select name="subcategory" class="form-select">
 <option value="">Subcategory</option>
 <?php
-$res=$imwp_conn->query("SELECT * FROM imwp_subcategories");
+$res=$imwp_conn->query("SELECT * FROM imwp_subcategories ORDER BY name ASC");
 while($r=$res->fetch_assoc()){
 $sel=($subcategory==$r['id'])?"selected":"";
 echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
@@ -69,7 +147,7 @@ echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
 <select name="brand" class="form-select">
 <option value="">Brand</option>
 <?php
-$res=$imwp_conn->query("SELECT * FROM imwp_brands");
+$res=$imwp_conn->query("SELECT * FROM imwp_brands ORDER BY name ASC");
 while($r=$res->fetch_assoc()){
 $sel=($brand==$r['id'])?"selected":"";
 echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
@@ -87,11 +165,16 @@ echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
 </div>
 
 <div class="col-md-2">
-<input type="text" name="search" value="<?= htmlspecialchars($search) ?>" class="form-control" placeholder="Search">
+<input type="text" name="search"
+value="<?= htmlspecialchars($search) ?>"
+class="form-control"
+placeholder="Search product">
 </div>
 
 <div class="col-md-1">
-<input type="number" name="per_page" value="<?= $per_page ?>" class="form-control" min="1">
+<input type="number" name="per_page"
+value="<?= $per_page ?>"
+class="form-control" min="1">
 </div>
 
 <div class="col-md-1 d-flex gap-1">
@@ -103,105 +186,102 @@ echo "<option value='{$r['id']}' $sel>{$r['name']}</option>";
 </div>
 </div>
 
-<div class="card">
+<!-- =========================
+     PRODUCT TABLE
+========================= -->
+<div class="card shadow-sm">
 <div class="card-body table-responsive">
 
-<table class="table table-bordered">
+<table class="table table-hover align-middle">
 <thead>
 <tr>
 <th>ID</th>
 <th>Name</th>
-<th>Barcode</th>
 <th>Category</th>
-<th>Sub</th>
 <th>Brand</th>
 <th>Stock</th>
-<th>Purchase</th>
 <th>Sale</th>
 <th>Status</th>
-<th>Action</th>
+<th width="200">Action</th>
 </tr>
 </thead>
 <tbody>
 
-<?php while($p=$result->fetch_assoc()){ 
-
-// check sales usage
-$used = 0;
-
-$check = $imwp_conn->prepare("SELECT COUNT(*) as total FROM imwp_sales_items WHERE product_id=?");
-
-if($check){
-    $check->bind_param("i",$p['id']);
-    $check->execute();
-    $res = $check->get_result();
-    if($res){
-        $row = $res->fetch_assoc();
-        $used = $row['total'];
-    }
-}
-
-?>
+<?php if($result->num_rows > 0): ?>
+<?php while($p=$result->fetch_assoc()): ?>
 
 <tr>
 <td><?= $p['id'] ?></td>
-<td><?= $p['name'] ?></td>
-<td><?= $p['barcode'] ?></td>
+<td><?= htmlspecialchars($p['name']) ?></td>
 <td><?= $p['category'] ?></td>
-<td><?= $p['subcategory'] ?></td>
 <td><?= $p['brand'] ?></td>
 <td><?= $p['stock'] ?></td>
-<td><?= $p['purchase_price'] ?></td>
 <td><?= $p['sale_price'] ?></td>
-<td><?= ucfirst($p['status']) ?></td>
 
 <td>
+<span class="badge <?= $p['status']=='active'?'bg-success':'bg-secondary' ?>">
+<?= ucfirst($p['status']) ?>
+</span>
+</td>
+
+<td>
+<div class="d-flex gap-1 flex-nowrap">
 
 <button class="btn btn-sm btn-primary"
 data-bs-toggle="modal"
-data-bs-target="#editModal"
-onclick="fillEdit(
-'<?= $p['id'] ?>',
-'<?= htmlspecialchars($p['name'],ENT_QUOTES) ?>',
-'<?= htmlspecialchars($p['barcode'],ENT_QUOTES) ?>',
-'<?= $p['category_id'] ?>',
-'<?= $p['subcategory_id'] ?>',
-'<?= $p['brand_id'] ?>',
-'<?= $p['stock'] ?>',
-'<?= htmlspecialchars($p['main_unit'],ENT_QUOTES) ?>',
-'<?= htmlspecialchars($p['sub_unit'],ENT_QUOTES) ?>',
-'<?= $p['sub_unit_size'] ?>',
-'<?= $p['purchase_price'] ?>',
-'<?= $p['sale_price'] ?>',
-'<?= $p['alert_level'] ?>',
-'<?= $p['status'] ?>'
-)">
+data-bs-target="#editModal">
 Edit
 </button>
 
 <a href="products.php?toggle=<?= $p['id'] ?>"
-class="btn btn-sm <?= $p['status']=='active'?'btn-success':'btn-secondary' ?>">
+class="btn btn-sm <?= $p['status']=='active'?'btn-dark':'btn-secondary' ?>">
 Toggle
 </a>
 
-<?php if($used == 0){ ?>
 <a href="products.php?delete=<?= $p['id'] ?>"
 class="btn btn-sm btn-danger"
-onclick="return confirm('Delete this product permanently?')">
+onclick="return confirm('Delete this product?')">
 Delete
 </a>
-<?php } else { ?>
-<button class="btn btn-sm btn-danger" disabled title="Cannot delete. Product has sales history">
-Delete
-</button>
-<?php } ?>
 
+</div>
+</td>
+
+</tr>
+
+<?php endwhile; ?>
+<?php else: ?>
+
+<tr>
+<td colspan="8" class="text-center text-muted py-4">
+No products found
 </td>
 </tr>
 
-<?php } ?>
+<?php endif; ?>
 
 </tbody>
 </table>
+
 </div>
 </div>
+
+<?php $stmt->close(); ?>
+
+<!-- =========================
+     PAGINATION
+========================= -->
+<?php if($total_pages > 1): ?>
+<nav class="mt-3">
+<ul class="pagination justify-content-end">
+<?php for($i=1;$i<=$total_pages;$i++): ?>
+<li class="page-item <?= $page==$i?'active':'' ?>">
+<a class="page-link"
+href="?page=<?= $i ?>&per_page=<?= $per_page ?>">
+<?= $i ?>
+</a>
+</li>
+<?php endfor; ?>
+</ul>
+</nav>
+<?php endif; ?>

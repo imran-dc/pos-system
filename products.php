@@ -15,6 +15,7 @@ if(isset($_GET['delete'])){
             $row = $res->fetch_assoc();
             $used = $row['total'];
         }
+        $check->close();
     }
 
     if($used == 0){
@@ -22,6 +23,7 @@ if(isset($_GET['delete'])){
         if($stmt){
             $stmt->bind_param("i",$id);
             $stmt->execute();
+            $stmt->close();
         }
     }
 
@@ -45,6 +47,7 @@ if(isset($_GET['toggle'])){
     if($stmt){
         $stmt->bind_param("i",$id);
         $stmt->execute();
+        $stmt->close();
     }
 
     header("Location: products.php");
@@ -77,6 +80,7 @@ if(isset($_POST['update_product'])){
             $_POST['edit_id']
         );
         $stmt->execute();
+        $stmt->close();
     }
 
     header("Location: products.php");
@@ -86,35 +90,32 @@ if(isset($_POST['update_product'])){
 include "includes/header.php";
 ?>
 
-<div class="container-fluid py-4">
+<div class="container-fluid app-wrapper py-4">
 
-    <!-- TOP ROW -->
-    <div class="row g-4 mb-4">
+    <!-- TOP SECTION -->
+    <div class="row g-4 mb-4 align-items-start">
 
-        <!-- LEFT: META -->
-        <div class="col-lg-4">
-            <?php include "sections/product_meta.php"; ?>
+        <!-- META -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card app-card">
+                <?php include "sections/product_meta.php"; ?>
+            </div>
         </div>
 
-        <!-- RIGHT: PRODUCT FORM -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">Add New Product</h6>
-                </div>
-                <div class="card-body">
-                    <?php include "sections/product_form.php"; ?>
-                </div>
+        <!-- FORM -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card app-card">
+                <?php include "sections/product_form.php"; ?>
             </div>
         </div>
 
     </div>
 
-    <!-- FULL WIDTH PRODUCT LIST -->
+    <!-- PRODUCT LIST -->
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
+            <div class="card app-card">
+                <div class="card-header app-card-header">
                     <h6 class="mb-0">Product List</h6>
                 </div>
                 <div class="card-body">

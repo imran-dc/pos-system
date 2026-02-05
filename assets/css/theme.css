@@ -1,0 +1,277 @@
+/* =====================================================
+   IMWP POS UNIFIED THEME
+   Clean Black + Blue + Red Professional UI
+===================================================== */
+
+:root {
+
+    /* ===== Core Colors ===== */
+    --primary: #111111;
+    --primary-soft: #1f1f1f;
+    --accent: #2563eb;
+    --accent-dark: #1e40af;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warning: #f59e0b;
+
+    --bg-main: #f4f6f9;
+    --card-bg: #ffffff;
+    --border: #e5e7eb;
+
+    --text-dark: #111111;
+    --text-muted: #6b7280;
+}
+
+/* =======================
+   GLOBAL
+======================= */
+
+body {
+    background: var(--bg-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+h5, h6 {
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+/* =======================
+   CARDS
+======================= */
+
+.card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+}
+
+.shadow-sm {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+}
+
+/* =======================
+   CARD HEADER
+======================= */
+
+.card-header {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    border-bottom: none;
+}
+
+/* =======================
+   ACCORDION
+======================= */
+
+.accordion-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.accordion-button {
+    background: #2b2b2b;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: none;
+}
+
+.accordion-button:not(.collapsed) {
+    background: #111111;
+    color: #fff;
+}
+
+/* =======================
+   FORMS
+======================= */
+
+.form-control,
+.form-select {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+}
+
+/* =======================
+   BUTTON SYSTEM
+======================= */
+
+.btn {
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.btn-primary {
+    background: var(--accent);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: var(--accent-dark);
+}
+
+.btn-dark {
+    background: var(--primary);
+    border: none;
+}
+
+.btn-dark:hover {
+    background: var(--primary-soft);
+}
+
+.btn-danger {
+    background: var(--danger);
+    border: none;
+}
+
+.btn-success {
+    background: var(--success);
+    border: none;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    border: none;
+}
+
+/* =======================
+   TABLE
+======================= */
+
+.table {
+    font-size: 13px;
+}
+
+.table thead {
+    background: #111111;
+    color: #ffffff;
+}
+
+.table thead th {
+    border: none;
+}
+
+.table tbody tr:hover {
+    background: #f3f4f6;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+/* =======================
+   BADGES
+======================= */
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+/* =======================
+   STATUS COLORS
+======================= */
+
+.status-active {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* =======================
+   FILTER CARD
+======================= */
+
+.filter-card {
+    border-left: 4px solid var(--accent);
+}
+
+/* =======================
+   PAGINATION
+======================= */
+
+.pagination .page-link {
+    color: var(--primary);
+}
+
+.pagination .active .page-link {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+/* =========================
+   PRODUCT LIST ACTION FIX
+========================= */
+
+.action-cell {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.action-group .btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+/* Table improvement */
+.table {
+    vertical-align: middle;
+}
+
+.table td,
+.table th {
+    white-space: nowrap;
+}
+
+.table tbody tr:hover {
+    background: #f3f4f6;
+}
+/* =========================
+   PRODUCT LIST ACTION FIX
+========================= */
+
+.action-cell {
+    white-space: nowrap;
+    width: 220px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-buttons .btn {
+    min-width: 65px;
+}
+
+/* Prevent table breaking layout */
+.table td {
+    vertical-align: middle;
+}
