@@ -93,14 +93,7 @@ include "includes/header.php";
 
         <!-- LEFT: META -->
         <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h6 class="mb-0">Category / Subcategory / Brand</h6>
-                </div>
-                <div class="card-body">
-                    <?php include "sections/product_meta.php"; ?>
-                </div>
-            </div>
+            <?php include "sections/product_meta.php"; ?>
         </div>
 
         <!-- RIGHT: PRODUCT FORM -->
